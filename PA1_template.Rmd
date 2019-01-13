@@ -1,25 +1,127 @@
 ---
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
+output:
+  pdf_document: default
+  html_document: default
 ---
+Course 5 Project 1
+====================
+
+##set working directory and load packages
+```{r echo = TRUE}
+setwd("/Users/weigeguo/Desktop/coursera")
+library(dplyr)
+library(ggplot2)
+```
+
+##Load and preprocessing data
+```{r echo = TRUE}
+activitydata <- read.csv("activity.csv")
+head(activitydata)
+str(activitydata)
+```
+
+##What is mean total number of steps taken per day?
+```{r echo = TRUE}
+#calculate total numbers of steps per day
+q1data <- activitydata %>%
+  group_by(date)%>%
+  summarise(totalsteps = sum(steps), na.rm = T)
+head(q1data)
+
+#make the plot
+ggplot(q1data, aes(x = totalsteps)) +
+  geom_histogram() +
+  ggtitle("Total Number of Steps Taken Per Day") +
+  xlab("Total Number of Steps")
+
+#calculate the mean and the median
+mean(q1data$totalsteps, na.rm = T)
+median(q1data$totalsteps, na.rm = T)
+```
+
+As calculated above, among all the days in the two months, the mean of total steps taken each day is 10766, and the median is 10765. 
+
+##What is the average daily activity pattern?
+```{r echo = TRUE}
+#calculate the mean of each interval across all days
+activitydata$interval <- as.factor(activitydata$interval)
+q2data <- activitydata %>%
+  group_by(interval) %>%
+  summarise(average = mean(steps, na.rm = T))
+
+#make the plot
+ggplot(q2data, aes(interval, average))+
+  geom_line()+
+  xlab("Intervals")+
+  ylab("Average Steps Taken") +
+  ggtitle("Average Daily Patern")
+
+#interval with the maximum number of steps
+which.max(q2data$average)
+q2data[104,]
+```
+
+The interval with the maximum average number of steps taken is 835.
+
+##Imputing missing values
+```{r echo = TRUE}
+#calculate missing values
+sum(is.na(activitydata$steps))
+
+#filling in missing values
+#First I created a new dataframe with an extra column that shows the mean of that interval
+nomissing <- activitydata %>%
+  group_by(interval) %>%
+  mutate(ave = mean(steps, na.rm = T))
+
+#Then I filled NAs with the mean of that interval
+nomissing$steps[is.na(nomissing$steps)] <- nomissing$ave[is.na(nomissing$steps)]
+
+#Create a new dataset that is equal to the original dataset but with the missing data filled in.
+nomissing$ave <- NULL
+#make the plot
+nomissingPlot <- nomissing %>%
+  group_by(date) %>%
+  summarise(totalsteps2 = sum(steps))
+
+ggplot(nomissingPlot, aes(x = totalsteps2)) +
+  geom_histogram() +
+  ggtitle("Total Number of Steps Taken Per Day") +
+  xlab("Total Number of Steps")
+
+#calculate the mean and the medium
+mean(nomissingPlot$totalsteps2)
+median(nomissingPlot$totalsteps2)
+```
+
+There are 2304 missing values.
+
+Since I filled all NAs with the mean of that interval across all days, the mean hasn't changed at all and the median has slightly increased. The overll patern has stayed the same except for the bar after the first pike, which has had a much higher frequency after filling the NAs.
+
+##Are there differences in activity patterns between weekdays and weekends?
+```{r echo = TRUE}
+#Create a new factor variable in the dataset with two levels – “weekday” and “weekend” indicating whether a given date is a weekday or weekend day.
+library(lubridate)
+nomissing$date <- ymd(nomissing$date)
+nomissing$type <- ifelse(weekdays(nomissing$date) == "Saturday" | weekdays(nomissing$date) == "Sunday", "weekend", "weekday")
+
+#make the plot
+plot1 <- nomissing %>%
+  filter(type == "weekend")%>%
+  group_by(interval)%>%
+  summarise(mean = mean(steps))
+plot1
+plot2 <- nomissing %>%
+  filter(type == "weekday")%>%
+  group_by(interval)%>%
+  summarise(mean = mean(steps))
+
+par(mfrow=c(2,1))
+plot(plot1$interval, plot1$mean, type = "l", xlab = "Intervals", ylab = "Average steps taken", main  = "Weekend")
+plot(plot2$interval, plot2$mean, type = "l", xlab = "Intervals", ylab = "Average steps taken", main = "Weekday")
+```
 
 
-## Loading and preprocessing the data
 
 
 
-## What is mean total number of steps taken per day?
-
-
-
-## What is the average daily activity pattern?
-
-
-
-## Imputing missing values
-
-
-
-## Are there differences in activity patterns between weekdays and weekends?
