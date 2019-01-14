@@ -48,9 +48,9 @@ activitydata$interval <- as.factor(activitydata$interval)
 q2data <- activitydata %>%
   group_by(interval) %>%
   summarise(average = mean(steps, na.rm = T))
-
+q2data
 #make the plot
-ggplot(q2data, aes(interval, average))+
+ggplot(q2data, aes(interval, average, group = 1))+
   geom_line()+
   xlab("Intervals")+
   ylab("Average Steps Taken") +
