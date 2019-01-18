@@ -11,26 +11,6 @@ Course 5 Project 1
 ```r
 setwd("/Users/weigeguo/Desktop/coursera")
 library(dplyr)
-```
-
-```
-## 
-## Attaching package: 'dplyr'
-```
-
-```
-## The following objects are masked from 'package:stats':
-## 
-##     filter, lag
-```
-
-```
-## The following objects are masked from 'package:base':
-## 
-##     intersect, setdiff, setequal, union
-```
-
-```r
 library(ggplot2)
 ```
 
@@ -49,6 +29,20 @@ head(activitydata)
 ## 4    NA 2012-10-01       15
 ## 5    NA 2012-10-01       20
 ## 6    NA 2012-10-01       25
+```
+
+```r
+tail(activitydata)
+```
+
+```
+##       steps       date interval
+## 17563    NA 2012-11-30     2330
+## 17564    NA 2012-11-30     2335
+## 17565    NA 2012-11-30     2340
+## 17566    NA 2012-11-30     2345
+## 17567    NA 2012-11-30     2350
+## 17568    NA 2012-11-30     2355
 ```
 
 ```r
@@ -100,7 +94,7 @@ ggplot(q1data, aes(x = totalsteps)) +
 ## Warning: Removed 8 rows containing non-finite values (stat_bin).
 ```
 
-![plot of chunk unnamed-chunk-3](figure/unnamed-chunk-3-1.png)
+![plot of chunk unnamed-chunk-169](figure/unnamed-chunk-169-1.png)
 
 ```r
 #calculate the mean and the median
@@ -129,21 +123,37 @@ activitydata$interval <- as.factor(activitydata$interval)
 q2data <- activitydata %>%
   group_by(interval) %>%
   summarise(average = mean(steps, na.rm = T))
+q2data
+```
 
+```
+## # A tibble: 288 x 2
+##    interval   average
+##      <fctr>     <dbl>
+##  1        0 1.7169811
+##  2        5 0.3396226
+##  3       10 0.1320755
+##  4       15 0.1509434
+##  5       20 0.0754717
+##  6       25 2.0943396
+##  7       30 0.5283019
+##  8       35 0.8679245
+##  9       40 0.0000000
+## 10       45 1.4716981
+## # ... with 278 more rows
+```
+
+```r
 #make the plot
-ggplot(q2data, aes(interval, average))+
+q2data$interval=as.numeric(levels(q2data$interval))[q2data$interval]
+ggplot(q2data, aes(interval, average, group = 1))+
   geom_line()+
   xlab("Intervals")+
   ylab("Average Steps Taken") +
   ggtitle("Average Daily Patern")
 ```
 
-```
-## geom_path: Each group consists of only one observation. Do you need to
-## adjust the group aesthetic?
-```
-
-![plot of chunk unnamed-chunk-4](figure/unnamed-chunk-4-1.png)
+![plot of chunk unnamed-chunk-170](figure/unnamed-chunk-170-1.png)
 
 ```r
 #interval with the maximum number of steps
@@ -161,7 +171,7 @@ q2data[104,]
 ```
 ## # A tibble: 1 x 2
 ##   interval  average
-##     <fctr>    <dbl>
+##      <dbl>    <dbl>
 ## 1      835 206.1698
 ```
 
@@ -205,7 +215,7 @@ ggplot(nomissingPlot, aes(x = totalsteps2)) +
 ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 ```
 
-![plot of chunk unnamed-chunk-5](figure/unnamed-chunk-5-1.png)
+![plot of chunk unnamed-chunk-171](figure/unnamed-chunk-171-1.png)
 
 ```r
 #calculate the mean and the medium
@@ -233,60 +243,55 @@ Since I filled all NAs with the mean of that interval across all days, the mean 
 ```r
 #Create a new factor variable in the dataset with two levels – “weekday” and “weekend” indicating whether a given date is a weekday or weekend day.
 library(lubridate)
-```
-
-```
-## 
-## Attaching package: 'lubridate'
-```
-
-```
-## The following object is masked from 'package:base':
-## 
-##     date
-```
-
-```r
 nomissing$date <- ymd(nomissing$date)
 nomissing$type <- ifelse(weekdays(nomissing$date) == "Saturday" | weekdays(nomissing$date) == "Sunday", "weekend", "weekday")
-
-#make the plot
-plot1 <- nomissing %>%
-  filter(type == "weekend")%>%
-  group_by(interval)%>%
-  summarise(mean = mean(steps))
-plot1
+table(nomissing$type)
 ```
 
 ```
-## # A tibble: 288 x 2
-##    interval        mean
-##      <fctr>       <dbl>
-##  1        0 0.214622642
-##  2        5 0.042452830
-##  3       10 0.016509434
-##  4       15 0.018867925
-##  5       20 0.009433962
-##  6       25 3.511792453
-##  7       30 0.066037736
-##  8       35 0.108490566
-##  9       40 0.000000000
-## 10       45 0.558962264
-## # ... with 278 more rows
+## 
+## weekday weekend 
+##   12960    4608
 ```
 
 ```r
-plot2 <- nomissing %>%
-  filter(type == "weekday")%>%
-  group_by(interval)%>%
-  summarise(mean = mean(steps))
-
-par(mfrow=c(2,1))
-plot(plot1$interval, plot1$mean, type = "l", xlab = "Intervals", ylab = "Average steps taken", main  = "Weekend")
-plot(plot2$interval, plot2$mean, type = "l", xlab = "Intervals", ylab = "Average steps taken", main = "Weekday")
+nomissing
 ```
 
-![plot of chunk unnamed-chunk-6](figure/unnamed-chunk-6-1.png)
+```
+## # A tibble: 17,568 x 4
+## # Groups:   interval [288]
+##        steps       date interval    type
+##        <dbl>     <date>   <fctr>   <chr>
+##  1 1.7169811 2012-10-01        0 weekday
+##  2 0.3396226 2012-10-01        5 weekday
+##  3 0.1320755 2012-10-01       10 weekday
+##  4 0.1509434 2012-10-01       15 weekday
+##  5 0.0754717 2012-10-01       20 weekday
+##  6 2.0943396 2012-10-01       25 weekday
+##  7 0.5283019 2012-10-01       30 weekday
+##  8 0.8679245 2012-10-01       35 weekday
+##  9 0.0000000 2012-10-01       40 weekday
+## 10 1.4716981 2012-10-01       45 weekday
+## # ... with 17,558 more rows
+```
+
+```r
+#make the plot
+plot1 <- nomissing %>%
+  group_by(interval)%>%
+  mutate(mean = ifelse(type == "weekend",mean(steps[type == "weekend"]), mean(steps[type == "weekday"])))
+
+plot1$interval=as.numeric(levels(plot1$interval))[plot1$interval]
+g <- ggplot(plot1, aes(interval, mean))
+g + geom_line() + facet_grid(type~.) +
+    theme_bw() +
+    labs(y="Average Number of Steps Taken") +
+    labs(x="Intervals") +
+    labs(title="Daily Cctivity Pattern")
+```
+
+![plot of chunk unnamed-chunk-172](figure/unnamed-chunk-172-1.png)
 
 
 
