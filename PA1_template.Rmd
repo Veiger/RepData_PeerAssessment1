@@ -17,6 +17,7 @@ library(ggplot2)
 ```{r echo = TRUE}
 activitydata <- read.csv("activity.csv")
 head(activitydata)
+tail(activitydata)
 str(activitydata)
 ```
 
@@ -43,6 +44,7 @@ As calculated above, among all the days in the two months, the mean of total ste
 
 ##What is the average daily activity pattern?
 ```{r echo = TRUE}
+
 #calculate the mean of each interval across all days
 activitydata$interval <- as.factor(activitydata$interval)
 q2data <- activitydata %>%
@@ -50,6 +52,7 @@ q2data <- activitydata %>%
   summarise(average = mean(steps, na.rm = T))
 q2data
 #make the plot
+q2data$interval=as.numeric(levels(q2data$interval))[q2data$interval]
 ggplot(q2data, aes(interval, average, group = 1))+
   geom_line()+
   xlab("Intervals")+
@@ -104,21 +107,27 @@ Since I filled all NAs with the mean of that interval across all days, the mean 
 library(lubridate)
 nomissing$date <- ymd(nomissing$date)
 nomissing$type <- ifelse(weekdays(nomissing$date) == "Saturday" | weekdays(nomissing$date) == "Sunday", "weekend", "weekday")
-
+table(nomissing$type)
+nomissing
 #make the plot
 plot1 <- nomissing %>%
-  filter(type == "weekend")%>%
   group_by(interval)%>%
-  summarise(mean = mean(steps))
-plot1
-plot2 <- nomissing %>%
-  filter(type == "weekday")%>%
-  group_by(interval)%>%
-  summarise(mean = mean(steps))
+  mutate(mean = ifelse(type == "weekend",mean(steps[type == "weekend"]), mean(steps[type == "weekday"])))
 
-par(mfrow=c(2,1))
-plot(plot1$interval, plot1$mean, type = "l", xlab = "Intervals", ylab = "Average steps taken", main  = "Weekend")
-plot(plot2$interval, plot2$mean, type = "l", xlab = "Intervals", ylab = "Average steps taken", main = "Weekday")
+plot1$interval=as.numeric(levels(plot1$interval))[plot1$interval]
+g <- ggplot(plot1, aes(interval, mean))
+g + geom_line() + facet_grid(type~.) +
+    theme_bw() +
+    labs(y="Average Number of Steps Taken") +
+    labs(x="Intervals") +
+    labs(title="Daily Cctivity Pattern")
+
+
+
+
+
+
+
 ```
 
 
